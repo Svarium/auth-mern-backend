@@ -10,7 +10,7 @@ export const registerUser = asyncHandler(async (req, res) => {
    //validations
    if(!name || !email || !password){
     //400 bad request
-    res.status(400).json({message: "All fields are required"})
+    return  res.status(400).json({message: "All fields are required"})
    }
 
    //check password length
@@ -139,6 +139,42 @@ export const getUser = asyncHandler(async (req,res) => {
         //404 not found
         res.status(404).json({message:"user not found"});
     }
+})
+
+//update user
+
+export const updateUser = asyncHandler(async (req,res) => {
+    //get user details from the token ---> exclude pass
+    const user = await User.findById(req.user._id);
+    
+    if(user){
+    //user properties to update    
+        const {name, bio, photo} = req.body;
+
+    //update user properties
+    user.name = name || user.name;
+    user.bio = bio || user.bio;
+    user.photo = photo || user.photo
+
+    const updated = await user.save();
+
+    res.status(200).json({
+        _id:updated._id,
+        name: updated.name,
+        email: updated.email,
+        role: updated.role,
+        photo: updated.photo,
+        bio: updated.bio,
+        isVerified: updated.isVerified
+    })
+    } else {
+        //404 not found
+        res.status(404).json({message:"user not found"})
+    }
+  
+
+
+
 })
 
 

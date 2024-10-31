@@ -10,7 +10,7 @@ export const protect = asyncHandler(async(req,res, next) => {
 
         if(!token){
             //401 unauthorized
-            res.status(401).json({message:"not authorized , please login!"});
+         return  res.status(401).json({message:"not authorized , please login!"});
         }
 
         //verify token
@@ -21,7 +21,7 @@ export const protect = asyncHandler(async(req,res, next) => {
 
         //check if user exist
         if(!user){
-            res.status(404).json({message:"user not found"});
+          return res.status(404).json({message:"user not found"});
         }
 
         //set user details in the request objet

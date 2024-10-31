@@ -65,9 +65,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-
 //user login
-
 export const loginUser = asyncHandler(async (req,res) => {
     //get email and password from req.body
     const {email, password} = req.body;
@@ -123,6 +121,25 @@ export const loginUser = asyncHandler(async (req,res) => {
         res.status(400).json({message:"Invalid user data"})
     }
 });
+
+//logout
+export const logoutUser = asyncHandler(async (req,res) => {
+    res.clearCookie("token");
+    res.status(200).json({message: "user logged out"})
+});
+
+// get user
+export const getUser = asyncHandler(async (req,res) => {
+    //get details from the token ------> exclude pasword
+    const user = await User.findById(req.user._id).select("-password")
+
+    if(user){
+        res.status(200).json(user);
+    } else {
+        //404 not found
+        res.status(404).json({message:"user not found"});
+    }
+})
 
 
 

@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import User from "../models/auth/UserModel.js";
 
-
+//check ouser login
 export const protect = asyncHandler(async(req,res, next) => {
     try {
         //check if user is login
@@ -35,11 +35,31 @@ export const protect = asyncHandler(async(req,res, next) => {
     }
 });
 
-//admmin middleware
+//admin middleware
 export const adminMiddleware = asyncHandler(async(req,res,next) => {
     if(req.user && req.user.role === "admin"){
         return next()
     }
     //if not admin send 403 forbidden
     res.status(403).json({message:"Not authorized as an admin"});
+})
+
+//creator & admin middleware
+export const creatorMiddleware = asyncHandler(async(req,res,next) => {
+    if((req.user && req.user.role == "creator") || (req.user && req.user.role == "admin")){
+       return next()        
+    }
+
+    //if note creator, send 403 Forbidden
+    return res.status(403).json({message:"only creators can do this!"})
+})
+
+//verify middleware
+export const verifyMiddleware = asyncHandler(async (req,res,next) => {
+    if(req.user && req.user.isVerified){
+        return next()
+    }
+
+    //if not verified, send 403 forbidden
+    return res.status(403).json({message:"Please verify your email address!"})
 })

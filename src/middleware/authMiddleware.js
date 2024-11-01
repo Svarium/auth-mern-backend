@@ -34,3 +34,12 @@ export const protect = asyncHandler(async(req,res, next) => {
         res.status(401).json({message:"Not authorized, token failed"});
     }
 });
+
+//admmin middleware
+export const adminMiddleware = asyncHandler(async(req,res,next) => {
+    if(req.user && req.user.role === "admin"){
+        return next()
+    }
+    //if not admin send 403 forbidden
+    res.status(403).json({message:"Not authorized as an admin"});
+})

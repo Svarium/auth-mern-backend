@@ -3,7 +3,9 @@ import User from "../../models/auth/UserModel.js";
 import generateToken from "../../helpers/generateToken.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import Token from "../../models/auth/Token.js";
+import crypto from "node:crypto";
+import hashToken from "../../helpers/hashToken.js";
 
 // user register
 export const registerUser = asyncHandler(async (req, res) => {
@@ -178,7 +180,6 @@ export const updateUser = asyncHandler(async (req,res) => {
 
 })
 
-
 // login status
 export const userLoginStatus = asyncHandler(async(req,res) => {
     const token = req.cookies.token;
@@ -197,5 +198,60 @@ export const userLoginStatus = asyncHandler(async(req,res) => {
     }
 })
 
+// email verify
+export const verifyEmail = asyncHandler(async(req,res) => {
+    const user = await User.findById(req.user_id);
 
+    //if user exist
+    if(!user){
+        return res.status(404).json({message:"user not found"})
+    }
+
+    //check if user is already verified
+    if(user.isVerified){
+        return res.status(400).json({message:"user is already verified"})
+    }
+
+    let token = await Token.findOne({userId: user._id})
+
+    //if token exist --> delete the token
+    if(token){
+        await token.deleteOne();
+    }
+
+    //create a verification token using the user id ---> crypto
+    const verificationToken = crypto.randomBytes(64).toString("hex") + user._id;
+
+    //hash the verification token
+
+    const hashedToken = await hashToken(verificationToken);
+
+    await new Token({
+        userId: user._id,
+        verificationToken:hashedToken,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24hours
+    }).save();
+
+    //verification link
+    const verificationLink =  `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+
+    //send email
+    const subjet = "Email Verification - AuthKit";
+    const send_to = user.email;
+    const reply_to = "noreply@gmail.com";
+    const template = "emailVerification";
+    const send_from = process.env.USER_EMAIL;
+    const name = user.name;
+    const url = verificationLink;
+
+    try {
+        await sendEmail(subjet,send_to,reply_to,template,send_from,name,url);
+        return res.status(200).json({message:"Email sent!"})
+        
+    } catch (error) {
+        console.log("Error sending email",error);
+        return res.status(500).json({message:"Email could not be sent :("})        
+    }
+})
 

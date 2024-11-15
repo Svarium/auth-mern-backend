@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import Token from "../../models/auth/Token.js";
 import crypto from "node:crypto";
 import hashToken from "../../helpers/hashToken.js";
+import sendEmail from "../../helpers/sendEmail.js";
 
 // user register
 export const registerUser = asyncHandler(async (req, res) => {
@@ -198,60 +199,58 @@ export const userLoginStatus = asyncHandler(async(req,res) => {
     }
 })
 
-// email verify
-export const verifyEmail = asyncHandler(async(req,res) => {
-    const user = await User.findById(req.user_id);
-
-    //if user exist
-    if(!user){
-        return res.status(404).json({message:"user not found"})
+// email verification
+export const verifyEmail = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+  
+    // if user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
-    //check if user is already verified
-    if(user.isVerified){
-        return res.status(400).json({message:"user is already verified"})
+  
+    // check if user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User is already verified" });
     }
-
-    let token = await Token.findOne({userId: user._id})
-
-    //if token exist --> delete the token
-    if(token){
-        await token.deleteOne();
+  
+    let token = await Token.findOne({ userId: user._id });
+  
+    // if token exists --> delete the token
+    if (token) {
+      await token.deleteOne();
     }
-
-    //create a verification token using the user id ---> crypto
+  
+    // create a verification token using the user id --->
     const verificationToken = crypto.randomBytes(64).toString("hex") + user._id;
-
-    //hash the verification token
-
-    const hashedToken = await hashToken(verificationToken);
-
+  
+    // hast the verification token
+    const hashedToken = hashToken(verificationToken);
+  
     await new Token({
-        userId: user._id,
-        verificationToken:hashedToken,
-        createdAt: Date.now(),
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24hours
+      userId: user._id,
+      verificationToken: hashedToken,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     }).save();
-
-    //verification link
-    const verificationLink =  `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
-
-    //send email
-    const subjet = "Email Verification - AuthKit";
+  
+    // verification link
+    const verificationLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  
+    // send email
+    const subject = "Email Verification - AuthKit";
     const send_to = user.email;
-    const reply_to = "noreply@gmail.com";
-    const template = "emailVerification";
     const send_from = process.env.USER_EMAIL;
+    const reply_to = "noreply@gmail.com";
+    const template = "emailVerification";    
     const name = user.name;
-    const url = verificationLink;
-
+    const link = verificationLink;
+  
     try {
-        await sendEmail(subjet,send_to,reply_to,template,send_from,name,url);
-        return res.status(200).json({message:"Email sent!"})
-        
+      // order matters ---> subject, send_to, send_from, reply_to, template, name, url
+      await sendEmail(subject, send_to, send_from, reply_to, template, name, link);
+      return res.json({ message: "Email sent" });
     } catch (error) {
-        console.log("Error sending email",error);
-        return res.status(500).json({message:"Email could not be sent :("})        
+      console.log("Error sending email: ", error);
+      return res.status(500).json({ message: "Email could not be sent" });
     }
-})
-
+  });

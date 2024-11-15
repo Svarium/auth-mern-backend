@@ -23,7 +23,7 @@ router.get("/admin/users", protect, creatorMiddleware, getAllUsers)
 router.get("/login-status", userLoginStatus)
 
 //verify user ---> email verification
-router.get("/send-email", protect, verifyEmail)
+router.post("/verify-email", protect, verifyEmail)
 
 
 

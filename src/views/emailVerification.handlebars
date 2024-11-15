@@ -1,0 +1,43 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email</title>
+    <style>
+
+      *{ text-decoration: none; } .container{ margin: 0 auto; max-width: 500px;
+      width: 100%; } .btn-link{ display: inline-block; padding: 10px 20px;
+      background-color: #007bff; color: #fff !important; text-decoration: none;
+      border-radius: 5px; } img{ width: 30px; border-radius: 50%;}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="https://cdn.freebiesupply.com/logos/large/2x/react-1-logo-svg-vector.svg" alt="" />
+      <h2 class="color-primary">{{subject}}</h2>
+      <hr />
+      <p>Hola
+        {{name}},
+      </p>
+      <p>Por favor usa el link de aquí debajo para verificar tu cuenta<br />Este link es válido por 24hs</p>
+
+      <a href={{link}} class="btn-link">Verificar Cuenta</a>
+
+      <p style="margin-bottom: 50px;">
+        Si no creaste ninguna cuenta podes ignorar este email.
+      </p>
+
+      <hr />
+      <p>Saludos,</p>
+      <p><b>ENCOPE</b> Sección Informatica</p>
+      <div>
+        <p style="font-size: 0.8rem;">
+         Si tenes problemas con el boton de "Verificar Cuenta" podes copiar el link que aparece debajo en tu navegador para seguir con el proceso.
+          <br />
+          <a href={{link}}>{{link}}</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

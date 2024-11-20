@@ -4,6 +4,8 @@ import cors from "cors";
 import connectToMongoDb from "./src/db/connect.js"; //agregar la extensión js sino falla
 import cookieParser from "cookie-parser";
 import fs from "node:fs";
+import errorHandler from "./src/helpers/errorHandler.js";
+
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ app.use(cors({
 app.use(express.json());
 app.use(urlencoded({extended:true}));
 app.use(cookieParser());
+
+app.use(errorHandler);
 
 //routes
 const routeFiles = fs.readdirSync("./src/routes");

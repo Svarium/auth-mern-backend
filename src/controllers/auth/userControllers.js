@@ -254,3 +254,41 @@ export const verifyEmail = asyncHandler(async (req, res) => {
       return res.status(500).json({ message: "Email could not be sent" });
     }
   });
+
+  
+// Verify user
+export const verifyUser = asyncHandler(async (req,res) => {
+    const { verificationToken} = req.params;
+
+    if(!verificationToken){
+        return res.status(400).json({message:'Invalid Verification Token'})
+    }
+
+    // hash the verification token --> because it was hased before saving in DB
+    const hashedToken = hashToken(verificationToken)
+
+    //find user with the verification token
+    const userToken = await Token.findOne({verificationToken: hashedToken,
+
+    //check if token has not expired
+    expiresAt:{$gt: Date.now()},
+    });
+
+    if(!userToken){
+        return res 
+        .status(400)
+        .json({message:"Invalid or expired verification token"})
+    }
+
+    //find user with de user id in ht token
+    const user = await User.findById(userToken.userId);
+
+    if(user.isVerified){
+        return res.status(400).json({message:"User is already verified"});
+    }
+
+    // update user to verified
+    user.isVerified = true;
+    await user.save();
+    res.status(200).json({message:"user verified!"});
+});
